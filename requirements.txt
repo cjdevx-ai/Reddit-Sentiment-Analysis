@@ -1,0 +1,26 @@
+# --- Core Environment ---
+fastapi
+uvicorn
+python-dotenv
+
+# --- Reddit Data Fetching ---
+praw
+
+# --- NLP / Sentiment Analysis ---
+transformers
+torch
+emoji
+tqdm
+
+# --- Data Handling / Processing ---
+pandas
+numpy
+
+# --- Optional Utilities ---
+requests
+rich
+
+# --- Visualization (optional for analysis/debugging) ---
+matplotlib
+seaborn
+wordcloud
