@@ -4,6 +4,10 @@ from reddit_client import fetch_comments  # your Reddit scraper function
 
 app = FastAPI()
 
+origins = [
+    "http://127.0.0.1:8123"
+]
+
 class Post(BaseModel):
     url: str
 
