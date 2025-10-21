@@ -1,5 +1,6 @@
 import os
 import praw
+import re
 from dotenv import load_dotenv
 from praw.models import MoreComments
 from transformers import pipeline
@@ -21,6 +22,32 @@ sentiment_pipeline = pipeline(
     truncation=True
 )
 
+def is_valid_reddit_submission_url(url: str) -> bool:
+    """
+    Validates if the URL is a Reddit submission URL (not a subreddit URL).
+    
+    Valid submission URLs:
+    - https://www.reddit.com/r/subreddit/comments/post_id/title/
+    - https://redd.it/post_id
+    
+    Invalid URLs (subreddit URLs):
+    - https://www.reddit.com/r/subreddit/
+    - https://www.reddit.com/r/subreddit
+    """
+    if not url or not isinstance(url, str):
+        return False
+    
+    # Check for redd.it short URLs
+    if re.match(r'https?://redd\.it/\w+', url):
+        return True
+    
+    # Check for full Reddit submission URLs
+    # Must contain /comments/ and have a post ID
+    if re.match(r'https?://(www\.)?reddit\.com/r/\w+/comments/\w+/', url):
+        return True
+    
+    return False
+
 def fetch_comments(url: str) -> dict[int, dict[str, str]]:
     """
     Fetches Reddit comments from a post and returns a dictionary:
@@ -30,7 +57,14 @@ def fetch_comments(url: str) -> dict[int, dict[str, str]]:
         ...
     }
     """
-    submission = reddit.submission(url=url)
+    # Validate that the URL is a Reddit submission URL, not a subreddit URL
+    if not is_valid_reddit_submission_url(url):
+        raise ValueError(f"Invalid Reddit submission URL: {url}. Please provide a URL to a specific Reddit post, not a subreddit.")
+    
+    try:
+        submission = reddit.submission(url=url)
+    except Exception as e:
+        raise ValueError(f"Failed to fetch Reddit submission: {str(e)}")
 
     list_comments = []
     for top_level_comment in submission.comments:
